@@ -22,9 +22,11 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
-import javax.annotation.PostConstruct;
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -33,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 @SpringBootApplication
+@EnableScheduling
 @EntityScan(basePackageClasses = Starter.class)
 public class Starter {
     @Autowired
@@ -46,8 +49,17 @@ public class Starter {
                 .run(args);
     }
 
-    @PostConstruct
-    private void start() {
+    @Scheduled(cron = "30 * * * * *")
+    // once per hour *:30
+    private void regularly() {
+        requestAndExportData();
+    }
+
+//    @PostConstruct
+//    private void start() {
+//        requestAndExportData();
+//    }
+    private void requestAndExportData() {
         try {
             HttpClient httpclient = createHttpClient();
             UserLoginType userLoginType = loginProcessor.extractUserLoginInfo(httpclient);
