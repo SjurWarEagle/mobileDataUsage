@@ -1,4 +1,4 @@
-package de.tkunkel.mobileDataUsage.prcessor;
+package de.tkunkel.mobileDataUsage.processor;
 
 import de.tkunkel.mobileDataUsage.types.Configuration;
 import de.tkunkel.mobileDataUsage.types.UserLoginType;

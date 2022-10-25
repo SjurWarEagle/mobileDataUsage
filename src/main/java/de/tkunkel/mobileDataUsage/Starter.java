@@ -1,6 +1,6 @@
 package de.tkunkel.mobileDataUsage;
 
-import de.tkunkel.mobileDataUsage.prcessor.LoginProcessor;
+import de.tkunkel.mobileDataUsage.processor.LoginProcessor;
 import de.tkunkel.mobileDataUsage.types.Configuration;
 import de.tkunkel.mobileDataUsage.types.UserLoginType;
 import org.apache.http.HttpEntity;
