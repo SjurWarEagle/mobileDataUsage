@@ -17,6 +17,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,6 +27,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.PostConstruct;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,6 +41,9 @@ import java.util.List;
 @EnableScheduling
 @EntityScan(basePackageClasses = Starter.class)
 public class Starter {
+    private final Logger LOG= LoggerFactory.getLogger(Starter.class);
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     @Autowired
     private LoginProcessor loginProcessor;
     @Autowired
@@ -49,16 +55,17 @@ public class Starter {
                 .run(args);
     }
 
-    @Scheduled(cron = "30 * * * * *")
-    // once per hour *:30
+    @Scheduled(cron = "@hourly")
+    // https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions
     private void regularly() {
         requestAndExportData();
     }
 
-//    @PostConstruct
-//    private void start() {
-//        requestAndExportData();
-//    }
+    @PostConstruct
+    private void start() {
+        requestAndExportData();
+    }
+
     private void requestAndExportData() {
         try {
             HttpClient httpclient = createHttpClient();
@@ -73,7 +80,6 @@ public class Starter {
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
 
             HttpResponse response2 = httpclient.execute(httpPost);
-            System.out.println(response2.getStatusLine().getStatusCode() + " " + response2.getStatusLine().getReasonPhrase());
             HttpEntity entity = response2.getEntity();
             Document document = Jsoup.parse(EntityUtils.toString(entity), "UTF-8");
             String memoryInfo = document
@@ -107,8 +113,6 @@ public class Starter {
         }
         try (FileWriter fw = new FileWriter(Paths.get(fileName).toFile(), true)) {
             Date now = new Date();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//            fw.append("Date,contractMemoryInMB,usedMemoryInMB");
             fw.append(sdf.format(now))
                     .append(",")
                     .append(String.valueOf(contractMemoryInMB))
@@ -120,14 +124,15 @@ public class Starter {
     }
 
     private void showUsageInConsole(int usedMemoryInMB, int contractMemoryInMB) {
-        System.out.println("usedMemoryInMB: " + usedMemoryInMB);
-        System.out.println("contractMemoryInMB: " + contractMemoryInMB);
+        Date now = new Date();
 
+        String msg = sdf.format(now) + ": " + usedMemoryInMB + " MB/" + contractMemoryInMB+"MB";
+        LOG.info(msg);
     }
 
     private HttpClient createHttpClient() {
         CookieStore cookieStore = new BasicCookieStore();
-        HttpClient httpclient = HttpClientBuilder
+        return HttpClientBuilder
                 .create()
 
                 .setDefaultCookieStore(cookieStore)
@@ -135,7 +140,6 @@ public class Starter {
                 .setRedirectStrategy(new LaxRedirectStrategy())
 
                 .build();
-        return httpclient;
     }
 
 }
