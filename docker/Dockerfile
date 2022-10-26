@@ -3,7 +3,7 @@ RUN mkdir -p /project/
 
 WORKDIR /project/
 RUN git clone https://github.com/SjurWarEagle/mobileDataUsage .
-RUN ls -la
+#RUN ls -la
 RUN mvn clean package spring-boot:repackage
 
 FROM maven:3.8.6-openjdk-18

@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   mobileDataUsage:
-    image: wareagledocker/mobileDataUsage:latest
+    image: wareagledocker/mobile-data-usage:latest
     environment:
       - CONFIG_FILE:/project/config.json
     volumes:
