@@ -21,7 +21,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: wareagledocker/mobileDataUsage:latest
+          tags: wareagledocker/mobile-data-usage:latest
           file: docker/Dockerfile
       -
         name: Image digest
