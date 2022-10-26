@@ -76,7 +76,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>de.tkunkel.twitch.mobileDataUsage.Starter</mainClass>
+                    <mainClass>de.tkunkel.mobileDataUsage.Starter</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -91,7 +91,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>de.tkunkel.twitch.mobileDataUsage.Starter</mainClass>
+                            <mainClass>de.tkunkel.mobileDataUsage.Starter</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
