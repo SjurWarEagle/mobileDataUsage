@@ -8,3 +8,4 @@ src/main/resources/mobiledatausage.p12
 config/config_private.json
 config/mobiledatausage.p12
 data/
+**/*/.lck

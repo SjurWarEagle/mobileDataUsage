@@ -15,6 +15,7 @@ public class Configuration {
     public String simDeUser;
     public String simDePassword;
     public String outputFileName;
+    public ConfigurationMqtt mqtt;
 
     @PostConstruct
     public void loadConfig() {
@@ -32,6 +33,7 @@ public class Configuration {
             this.simDePassword = configuration.simDePassword;
             this.simDeUser = configuration.simDeUser;
             this.outputFileName = configuration.outputFileName;
+            this.mqtt =configuration.mqtt;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

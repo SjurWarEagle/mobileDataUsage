@@ -1,5 +1,6 @@
 package de.tkunkel.mobileDataUsage;
 
+import de.tkunkel.mobileDataUsage.mqtt.MqttSender;
 import de.tkunkel.mobileDataUsage.processor.LoginProcessor;
 import de.tkunkel.mobileDataUsage.types.Configuration;
 import de.tkunkel.mobileDataUsage.types.UserLoginType;
@@ -15,6 +16,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
@@ -36,16 +38,19 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @SpringBootApplication
 @EnableScheduling
 @EntityScan(basePackageClasses = Starter.class)
 public class Starter {
-    private final Logger LOG= LoggerFactory.getLogger(Starter.class);
+    private final Logger LOG = LoggerFactory.getLogger(Starter.class);
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     private LoginProcessor loginProcessor;
+    @Autowired
+    private MqttSender mqttSender;
     @Autowired
     private Configuration configuration;
 
@@ -82,9 +87,9 @@ public class Starter {
             HttpResponse response2 = httpclient.execute(httpPost);
             HttpEntity entity = response2.getEntity();
             Document document = Jsoup.parse(EntityUtils.toString(entity), "UTF-8");
-            String memoryInfo = document
-                    .selectFirst(".dataUsageBar")
-                    .selectFirst(".medium")
+            String memoryInfo = Objects.requireNonNull(Objects.requireNonNull(document
+                                    .selectFirst(".dataUsageBar"))
+                            .selectFirst(".medium"))
                     .text();
 
             DataParser dataParser = new DataParser();
@@ -97,9 +102,10 @@ public class Starter {
         }
     }
 
-    private void distributeUsageInfo(int usedMemoryInMB, int contractMemoryInMB) throws IOException {
+    private void distributeUsageInfo(int usedMemoryInMB, int contractMemoryInMB) throws IOException, MqttException {
         showUsageInConsole(usedMemoryInMB, contractMemoryInMB);
         writeUsageToFile(usedMemoryInMB, contractMemoryInMB);
+        sendToMqtt(usedMemoryInMB, contractMemoryInMB);
     }
 
     private void writeUsageToFile(int usedMemoryInMB, int contractMemoryInMB) throws IOException {
@@ -126,8 +132,12 @@ public class Starter {
     private void showUsageInConsole(int usedMemoryInMB, int contractMemoryInMB) {
         Date now = new Date();
 
-        String msg = sdf.format(now) + ": " + usedMemoryInMB + " MB/" + contractMemoryInMB+"MB";
+        String msg = sdf.format(now) + ": " + usedMemoryInMB + "MB / " + contractMemoryInMB + "MB";
         LOG.info(msg);
+    }
+
+    private void sendToMqtt(int usedMemoryInMB, int contractMemoryInMB) throws MqttException {
+        mqttSender.sendUsageDate(usedMemoryInMB, contractMemoryInMB);
     }
 
     private HttpClient createHttpClient() {

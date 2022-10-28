@@ -4,7 +4,7 @@ services:
   mobileDataUsage:
     image: wareagledocker/mobile-data-usage:latest
     environment:
-      - CONFIG_FILE:/project/config.json
+      - CONFIG_FILE=/project/config.json
     volumes:
       - ../src/main/resources/private_config.json:/project/config.json:ro
     restart: unless-stopped
